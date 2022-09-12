@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blockchain</title>
+  </head>
+  <body>
+    <h1 id="message">Hello World</h1>
+  </body>
+  <script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"
+  ></script>
+  <script type="text/javascript">
+    const element = document.getElementById("message");
+    function getNodes() {
+      return new Promise((resolve, reject) => {
+        $.ajax({
+          type: "GET",
+          url: "http://172.19.0.2:5000/nodes",
+          success: function (data) {
+            resolve(data);
+          },
+          error: function (error) {
+            reject(error);
+          },
+        });
+      });
+    }
+    function getChain() {
+      return new Promise((resolve, reject) => {
+        $.ajax({
+          type: "GET",
+          url: `http://172.19.0.2:5000/chain`,
+          success: function (data) {
+            resolve(data);
+          },
+          error: function (error) {
+            reject(error);
+          },
+        });
+      });
+    }
+    function getChainNode(node) {
+      return new Promise((resolve, reject) => {
+        $.ajax({
+          type: "GET",
+          url: `http://${node}/chain`,
+          success: function (data) {
+            resolve(data);
+          },
+          error: function (error) {
+            reject(error);
+          },
+        });
+      });
+    }
+    setInterval(function () {
+      getNodes()
+        .then((nodeData) => {
+          console.log(nodeData.length);
+          console.log(nodeData.nodes);
+
+          if (nodeData.length > 0) {
+            getChain()
+              .then((chainData) => {
+                console.log("chain length: ", chainData.length);
+                nodeData.nodes.forEach((node) => {
+                  getChainNode(node)
+                    .then((chainNodeData) => {
+                      console.log(`${node}`, chainNodeData.length);
+                      if (chainNodeData.length === chainData.length) {
+                        element.innerHTML += "<br/>" + "everything is Ok!";
+                      } else {
+                        element.innerHTML += "<br/>" + "Error!";
+                      }
+                    })
+                    .catch((error) => {
+                      console.log(error);
+                    });
+                });
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }, 1000);
+  </script>
+</html>

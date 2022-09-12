@@ -1,0 +1,34 @@
+version: "3.9" # optional since v1.27.0
+services:
+  tin-server:
+    build: .
+    command: python main.py
+    networks:
+      - server
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/blockchain
+    env_file:
+      - .env
+    environment:
+      - WEBHOOK=${WEBHOOK}
+      - CHECK_DELAY=${CHECK_DELAY}
+  tin-node:
+    build: .
+    command: python node.py
+    depends_on:
+      - tin-server
+    networks:
+      - server
+    ports:
+      - 5001:5001
+    volumes:
+      - .:/blockchain
+    env_file:
+      - .env
+    environment:
+      - WEBHOOK=${WEBHOOK}
+      - CHECK_DELAY=${CHECK_DELAY}
+networks:
+  server:
